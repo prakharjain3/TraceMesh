@@ -7,6 +7,7 @@ from math import ceil
 from sklearn.cluster import DBSCAN
 from scipy.spatial.distance import cosine
 
+
 class DenStream:
 
     def __init__(self, lambd=0, eps=0.001, beta=2, mu=1, init_clusters=None, budget=0.01):
@@ -47,7 +48,7 @@ class DenStream:
             self.tp = ceil((1 / lambd) * np.log((beta * mu) / (beta * mu - 1)))
         else:
             self.tp = sys.maxsize
-        
+
         self.o_micro_clusters = []
         self.p_micro_clusters = []
         self.budget = budget
@@ -58,7 +59,6 @@ class DenStream:
                     sample = np.array(sample, dtype=np.float64)
                     micro_cluster.insert_sample(sample, 1.0)
                 self.p_micro_clusters.append(micro_cluster)
-
 
     def partial_fit(self, X, y=None, sample_weight=None):
         """
@@ -95,7 +95,7 @@ class DenStream:
         for sample, weight in zip(X, sample_weight):
             self._partial_fit(sample, weight)
         return self
-    
+
     def process_sample(self, sample, weight=1.0):
         sample = np.array(sample, dtype=np.float64)
         return self._partial_fit(sample, weight)
@@ -134,12 +134,12 @@ class DenStream:
 
         for sample, weight in zip(X, sample_weight):
             self._partial_fit(sample, weight)
-        
+
         p_micro_cluster_centers = np.array([p_micro_cluster.center() for
                                             p_micro_cluster in
                                             self.p_micro_clusters])
-        p_micro_cluster_weights = [p_micro_cluster.weight() for p_micro_cluster in
-                                   self.p_micro_clusters]
+        p_micro_cluster_weights = [p_micro_cluster.weight()
+                                   for p_micro_cluster in self.p_micro_clusters]
         print("before: ", len(p_micro_cluster_centers))
         print(len(self.o_micro_clusters))
         dbscan = DBSCAN(eps=0.1, algorithm='brute')
@@ -149,8 +149,8 @@ class DenStream:
 
         y = []
         for sample in X:
-            index, _ = self._get_nearest_micro_cluster(sample,
-                                                       self.p_micro_clusters)
+            index, _ = self._get_nearest_micro_cluster(
+                sample, self.p_micro_clusters)
             y.append(dbscan.labels_[index])
 
         return y
@@ -181,11 +181,13 @@ class DenStream:
         # Try to merge the sample with its nearest p_micro_cluster
         _, nearest_p_micro_cluster = \
             self._get_nearest_micro_cluster(sample, self.p_micro_clusters)
-        first_success = self._try_merge(sample, weight, nearest_p_micro_cluster)
+        first_success = self._try_merge(
+            sample, weight, nearest_p_micro_cluster)
         if first_success:
-            sum_weight = sum([p_micro_cluster.weight() for p_micro_cluster in
-                              self.p_micro_clusters])
-            prob = self.budget * (1 - nearest_p_micro_cluster.weight() / sum_weight)
+            sum_weight = sum([p_micro_cluster.weight()
+                             for p_micro_cluster in self.p_micro_clusters])
+            prob = self.budget * \
+                (1 - nearest_p_micro_cluster.weight() / sum_weight)
             if np.random.random() < prob:
                 return True
             return False
@@ -211,10 +213,8 @@ class DenStream:
     def _partial_fit(self, sample, weight):
         sampled = self._merging(sample, weight)
         if self.t % self.tp == 0:
-            self.p_micro_clusters = [p_micro_cluster for p_micro_cluster
-                                     in self.p_micro_clusters if
-                                     p_micro_cluster.weight() >= self.beta *
-                                     self.mu]
+            self.p_micro_clusters = [p_micro_cluster for p_micro_cluster in self.p_micro_clusters if
+                                     p_micro_cluster.weight() >= self.beta * self.mu]
             # Xis = [((self._decay_function(self.t - o_micro_cluster.creation_time
             #                               + self.tp) - 1) /
             #         (self._decay_function(self.tp) - 1)) for o_micro_cluster in
@@ -232,17 +232,19 @@ class DenStream:
             sample_weight = np.ones(n_samples, dtype=np.float64, order='C')
         else:
             # user-provided array
-            sample_weight = np.asarray(sample_weight, dtype=np.float64,
-                                       order="C")
+            sample_weight = np.asarray(
+                sample_weight, dtype=np.float64, order="C")
         if sample_weight.shape[0] != n_samples:
             raise ValueError("Shapes of X and sample_weight do not match.")
         return sample_weight
 
     def print_info(self):
-        p_sizes = [p_micro_cluster.size for p_micro_cluster in self.p_micro_clusters]
+        p_sizes = [
+            p_micro_cluster.size for p_micro_cluster in self.p_micro_clusters]
         print(f"Number of p_micro_clusters is {len(self.p_micro_clusters)}")
         print(f"Size of p_micro_clusters is {p_sizes}")
-        o_sizes = [o_micro_cluster.size for o_micro_cluster in self.o_micro_clusters]
+        o_sizes = [
+            o_micro_cluster.size for o_micro_cluster in self.o_micro_clusters]
         print(f"Number of o_micro_clusters is {len(self.o_micro_clusters)}")
         print(f"Size of o_micro_clusters is {o_sizes}")
 

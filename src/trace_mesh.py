@@ -21,11 +21,16 @@ def calculate_metrics(predicted_list, ground_truth_list, original_size):
 
 def get_config():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sketch_length", type=int, default=100, help="Length of the sketch")
-    parser.add_argument("--eps", type=float, default=0.01, help="Epsilon value for clustering")
-    parser.add_argument("--data_path", type=str, default="../datasets/", help="Path to the dataset")
-    parser.add_argument("--dataset", type=str, default="online_boutique", help="Name of the dataset")
-    parser.add_argument("--budget", type=float, default=0.01, help="Budget for the sampling")
+    parser.add_argument("--sketch_length", type=int,
+                        default=100, help="Length of the sketch")
+    parser.add_argument("--eps", type=float, default=0.01,
+                        help="Epsilon value for clustering")
+    parser.add_argument("--data_path", type=str,
+                        default="../datasets/", help="Path to the dataset")
+    parser.add_argument("--dataset", type=str,
+                        default="online_boutique", help="Name of the dataset")
+    parser.add_argument("--budget", type=float, default=0.01,
+                        help="Budget for the sampling")
     args = parser.parse_args()
     return args
 
@@ -33,7 +38,8 @@ def get_config():
 if __name__ == "__main__":
     args = get_config()
 
-    all_calls = process_trace_dataset(os.path.join(args.data_path, args.dataset, "train.csv"))
+    all_calls = process_trace_dataset(os.path.join(
+        args.data_path, args.dataset, "train.csv"))
     graph = path_embedding(chunk_length=100)
     sketch_hash = SketchHash(L=args.sketch_length, chunk_length=100)
 
@@ -41,10 +47,12 @@ if __name__ == "__main__":
     for idx, call_tuple in enumerate(all_calls):
         trace_id, call = call_tuple
         chunked_shingles = graph.convert_call_to_chunked_paths(call)
-        sketch, projection = sketch_hash.construct_streamhash_sketch(chunked_shingles)
+        sketch, projection = sketch_hash.construct_streamhash_sketch(
+            chunked_shingles)
         sketch_list.append(sketch)
 
-    dbscan = DBSCAN(eps=args.eps, min_samples=1, algorithm="brute", metric="cosine")
+    dbscan = DBSCAN(eps=args.eps, min_samples=1,
+                    algorithm="brute", metric="cosine")
     dbscan.fit(sketch_list)
 
     labels = dbscan.labels_
@@ -54,17 +62,20 @@ if __name__ == "__main__":
         if label not in clusters:
             clusters[label] = []
         clusters[label].append(sketch_list[i])
-    
-    DS_clusterer = DenStream(lambd=0.01, eps=args.eps, beta=10, mu=1, init_clusters=clusters, budget=args.budget)
+
+    DS_clusterer = DenStream(lambd=0.01, eps=args.eps, beta=10,
+                             mu=1, init_clusters=clusters, budget=args.budget)
     # DS_clusterer.print_info()
 
-    test_calls = process_trace_dataset(os.path.join(args.data_path, args.dataset, "test.csv"))
+    test_calls = process_trace_dataset(os.path.join(
+        args.data_path, args.dataset, "test.csv"))
     sampled_count = 0
     sampled_trace = []
     for idx, call_tuple in tqdm(enumerate(test_calls), total=len(test_calls)):
         trace_id, call = call_tuple
         chunked_shingles = graph.convert_call_to_chunked_paths(call)
-        sketch, projection = sketch_hash.construct_streamhash_sketch(chunked_shingles)
+        sketch, projection = sketch_hash.construct_streamhash_sketch(
+            chunked_shingles)
         sampled = DS_clusterer.process_sample(sketch)
         if sampled:
             sampled_count += 1
@@ -77,5 +88,5 @@ if __name__ == "__main__":
         lines = file.readlines()
         for line in lines:
             anomaly_labels.append(str(line.strip()))
-    
+
     calculate_metrics(sampled_trace, anomaly_labels, len(test_calls))

@@ -1,15 +1,14 @@
-## TraceMesh: Scalable and Streaming Sampling for Distributed Traces
+# TraceMesh: Scalable and Streaming Sampling for Distributed Traces
 
 This is the replication package for [CLOUD'24] [TraceMesh: Scalable and Streaming Sampling for Distributed Traces](https://arxiv.org/abs/2406.06975).
 
 In this paper, we propose **TraceMesh**, a scalable and streaming trace sampler.
 
-
 ![Overall framework of *TraceMesh*](./docs/TraceMesh.png)
 
-### Repository Organization 
+## Repository Organization
 
-```
+```python
 ├── docs/
 ├── datasets/online_boutique
 │   ├── train.csv # The training trace dataset
@@ -25,9 +24,9 @@ In this paper, we propose **TraceMesh**, a scalable and streaming trace sampler.
 └── README.md
 ```
 
-### Quick Start
+## Quick Start
 
-#### Installation
+### Installation
 
 1. Install [python >= 3.9](https://www.python.org/downloads/).
 
@@ -35,7 +34,7 @@ In this paper, we propose **TraceMesh**, a scalable and streaming trace sampler.
 
 ​```pip install -r requirements.txt```
 
-#### Data Preparation
+### Data Preparation
 
 We have collected, processed and cleaned the trace data from the `online_boutique` system for demonstration purposes.
 The trace data is available in the form of CSV files within the `datasets/` directory.
@@ -48,7 +47,7 @@ cd datasets/online_boutique
 tar -xzvf test.tar.gz
 ```
 
-#### Demo Execution
+### Demo Execution
 
 - Run *TraceMesh*
 

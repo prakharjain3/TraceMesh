@@ -16,7 +16,7 @@ def cosine_similarity(vector_a, vector_b):
 
 
 class SketchHash():
-    def __init__(self, L: int=1000, chunk_length: int=10):
+    def __init__(self, L: int = 1000, chunk_length: int = 10):
         self.L = L
         self.chunk_length = chunk_length
         self.H = []
@@ -42,8 +42,8 @@ class SketchHash():
         sum = randbits[0]
         for i in range(len(shingle_list)):
             sum += shingle_list[i] * randbits[i + 1]
-        return 2 * ((sum >> 63) & 1) - 1 
-        
+        return 2 * ((sum >> 63) & 1) - 1
+
     def construct_streamhash_sketch(self, shingles: list):
         """
         Construct streamhash sketch for a given list of shingles
@@ -53,9 +53,9 @@ class SketchHash():
         for shingle in shingles:
             shingle_list, count = shingle
             for i in range(self.L):
-                projection[i] += count * self.hashmulti(shingle_list, self.H[i])
+                projection[i] += count * \
+                    self.hashmulti(shingle_list, self.H[i])
 
         sketch = [1 if p >= 0 else 0 for p in projection]
 
         return (sketch, projection)
-

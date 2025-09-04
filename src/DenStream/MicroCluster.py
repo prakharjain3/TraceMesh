@@ -47,7 +47,7 @@ class MicroCluster:
 
     def weight(self):
         return self.sum_of_weights
-    
+
     def size(self):
         return self.size
 
